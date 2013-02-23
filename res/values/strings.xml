@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">newPhotoFilter</string>
+    <string name="title_section3">Section 3</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section1">Section 1</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="app_name">PhotoFilter</string>
+    <string name="gray">Grey Scale</string>
+    <string name="old"> Old Memory </string>
+    <string name="sharp">Sharp</string>
+    <string name="blur">Blur</string>
+    <string name="lomo"> Lomo-ish </string>
+    <string name="oil"> Oil Paint</string>
+    <string name="SoftGlow">Soft Glow</string>
+    <string name="pixelate">Pixelate</string>
+    <string name="HDR"> HDR </string>
+    <string name="gaussBlur">Gaussian Blur</string>
+    <string name="light">Light</string>
+    <string name="invert"> Inverted </string>
+    <string name="neon"> Neon Glow </string>
+    <string name="tv">TV-ish</string>
+    <string name="relief"> Relief </string>
+
+
+</resources>

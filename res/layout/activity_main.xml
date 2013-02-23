@@ -1,0 +1,45 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PhotoFilterLaunch"
+    tools:ignore="MergeRootFrame" 
+    android:orientation="vertical"
+    android:weightSum="1">
+    
+    <ImageView
+        android:id="@+id/imgView"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/test"
+        android:layout_weight="0.8">
+    </ImageView>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imgView"
+        android:layout_weight="0.2">
+     	<Button
+     	    android:id="@+id/pick"
+     	    android:layout_width="match_parent"
+     	    android:layout_height="wrap_content"
+     	    android:layout_weight="1"
+     	    android:text="Pick"
+     	    android:onClick="pickImage">
+     	</Button>
+     	<Button
+     	    android:id="@+id/save"
+     	    android:layout_width="match_parent"
+     	    android:layout_height="wrap_content"
+     	    android:layout_weight="1"
+     	    android:text="Save">
+     	</Button>
+        
+    </LinearLayout>	
+    
+    
+    
+</LinearLayout>
