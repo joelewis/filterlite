@@ -1,13 +1,19 @@
 package com.fix.newphotofilter;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+
 import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -22,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import cn.Ragnarok.BitmapFilter;
 
 public class MainActivity extends FragmentActivity implements
@@ -47,6 +54,10 @@ public class MainActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		ImageView imageView = (ImageView) findViewById(R.id.imgView);
+		sourceBitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+        
+		
 
 		// Set up the action bar to show a dropdown list.
 		final ActionBar actionBar = getActionBar();
@@ -101,6 +112,7 @@ public class MainActivity extends FragmentActivity implements
  
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String picturePath = cursor.getString(columnIndex);
+            Log.w("sadfadsfsfda", ""+picturePath);
             cursor.close();
              
             ImageView imageView = (ImageView) findViewById(R.id.imgView);
@@ -110,6 +122,32 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    public void saveImage(View v) {
+      	 ImageView imageView = (ImageView) findViewById(R.id.imgView);
+     	 imageView.buildDrawingCache();
+    	 Bitmap bm=imageView.getDrawingCache();
+    	 
+    	 OutputStream fOut = null;
+    	 Uri outputFileUri;
+    	 try {
+    	    File root = new File(Environment.getExternalStorageDirectory()
+    	      + File.separator + "folder_name" + File.separator);
+    	    root.mkdirs();
+    	   File sdImageMainDirectory = new File(root, "myPicName.jpg");
+    	    outputFileUri = Uri.fromFile(sdImageMainDirectory);
+    	    fOut = new FileOutputStream(sdImageMainDirectory);
+         } catch (Exception e) {
+    	    Toast.makeText(this, "Error occured. Please try again later.",
+    	      Toast.LENGTH_SHORT).show();
+         }
+
+    	   try {
+    	    bm.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+    	    fOut.flush();
+    	    fOut.close();
+    	   } catch (Exception e) {
+    	   }
+    }
 
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -134,9 +172,9 @@ public class MainActivity extends FragmentActivity implements
 		return true;
 	}
 	
-void applyFilter() {
+void applyFilter(String effect) {
 		
-		progressDialog = ProgressDialog.show(this, "请稍后", "正在处理中...");
+		progressDialog = ProgressDialog.show(this, "Applying...", effect);
 		new Thread() {
 
 			@Override
@@ -183,63 +221,63 @@ void applyFilter() {
 			return true;
 		case 2:
 			styleId = BitmapFilter.GRAY_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.gray));
 			return true;
 		case 3:
 			styleId = BitmapFilter.OLD_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.old));
 			return true;
 		case 4:
 			styleId = BitmapFilter.SHARPEN_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.sharp));
 			return true;
 		case 5:
 			styleId = BitmapFilter.BLUR_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.blur));
 			return true;
 		case 6:
 			styleId = BitmapFilter.LOMO_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.lomo));
 			return true;
 		case 7:
 			styleId = BitmapFilter.OIL_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.oil));
 			return true;
 		case 8:
 			styleId = BitmapFilter.SOFT_GLOW_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.SoftGlow));
 			return true;
 		case 9:
 			styleId = BitmapFilter.PIXELATE_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.pixelate));
 			return true;
 		case 10:
 			styleId = BitmapFilter.HDR_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.HDR));
 			return true;
 		case 11:
 			styleId = BitmapFilter.GAUSSIAN_BLUR_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.gaussBlur));
 			return true;
 		case 12:
 			styleId = BitmapFilter.LIGHT_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.light));
 			return true;
 		case 13:
 			styleId = BitmapFilter.NEON_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.neon));
 			return true;
 		case 14:
 			styleId = BitmapFilter.INVERT_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.invert));
 			return true;
 		case 15:
 			styleId = BitmapFilter.TV_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.tv));
 			return true;
 		case 16:
 			styleId = BitmapFilter.RELIEF_STYLE;
-			applyFilter();
+			applyFilter(getString(R.string.relief));
 			return true;
 		}
 
