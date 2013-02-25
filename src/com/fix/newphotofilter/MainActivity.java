@@ -2,15 +2,28 @@ package com.fix.newphotofilter;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Locale;
 
 import android.app.ActionBar;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,13 +44,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 import cn.Ragnarok.BitmapFilter;
 
+
+
+
 public class MainActivity extends FragmentActivity implements
 		ActionBar.OnNavigationListener {
-
+	String fileName;
+	String fName;
 	Bitmap sourceBitmap;
 	Bitmap change;
-	
+	String _Location;
+	String _DateTime;
+	String _MAKE;
+	String _MODEL;
+	String metaData;
+	String picturePath;
 	Handler handler;
+	String effect="original"; 
 	
 	ProgressDialog progressDialog = null;
 	
@@ -111,17 +134,118 @@ public class MainActivity extends FragmentActivity implements
             cursor.moveToFirst();
  
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            Log.w("sadfadsfsfda", ""+picturePath);
+            picturePath = cursor.getString(columnIndex);
+            Log.w("path", picturePath);
+            String fileName = new File(picturePath).getName();
+            String fName =fileName.substring(0, fileName.lastIndexOf('.'));
+            Log.w("filename",fName);
+            Toast.makeText(this, ""+picturePath,Toast.LENGTH_SHORT).show();
             cursor.close();
+            computeMetaData();
+             
+            metaData = "";
+            if(_DateTime!=null) {
+            	metaData += "\n"+_DateTime;
+            }
+            if(_Location!=null) {
+            	metaData += "\n"+ _Location;
+            }
+            else {
+            	if (_MAKE!=null) {
+            		metaData += "taken with "+ _MAKE;
+            	}
+            	if (_MODEL!=null) {
+            		metaData += " _MODEL";
+            	}
+            }
+            Log.w("sadfdsafdsafsadf", metaData);
              
             ImageView imageView = (ImageView) findViewById(R.id.imgView);
             sourceBitmap = BitmapFactory.decodeFile(picturePath);
-            imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            Bitmap bmp =drawTextToBitmap(getBaseContext(),sourceBitmap, metaData, 20, 255);
+            imageView.setImageBitmap(bmp);
          
         }
     }
+    
+    private void ShowExif(ExifInterface exif)
+    {
+     String myAttribute="Exif information ---\n";
+     myAttribute += getTagString(ExifInterface.TAG_DATETIME, exif);
+     myAttribute += getTagString(ExifInterface.TAG_FLASH, exif);
+     myAttribute += getTagString(ExifInterface.TAG_GPS_LATITUDE, exif);
+     myAttribute += getTagString(ExifInterface.TAG_GPS_LATITUDE_REF, exif);
+     myAttribute += getTagString(ExifInterface.TAG_GPS_LONGITUDE, exif);
+     myAttribute += getTagString(ExifInterface.TAG_GPS_LONGITUDE_REF, exif);
+     myAttribute += getTagString(ExifInterface.TAG_IMAGE_LENGTH, exif);
+     myAttribute += getTagString(ExifInterface.TAG_IMAGE_WIDTH, exif);
+     myAttribute += getTagString(ExifInterface.TAG_MAKE, exif);
+     myAttribute += getTagString(ExifInterface.TAG_MODEL, exif);
+     myAttribute += getTagString(ExifInterface.TAG_ORIENTATION, exif);
+     myAttribute += getTagString(ExifInterface.TAG_WHITE_BALANCE, exif);
+     Log.w("tags", myAttribute);
+    }
+    
+    private String getTagString(String tag, ExifInterface exif)
+    {
+     return(tag + " : " + exif.getAttribute(tag) + "\n");
+    }
 
+   public void getLocationAddress(double longitude, double latitude) {
+    //LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+    //String provider = locationManager.getBestProvider(new Criteria(), true);
+
+    //Location locations = locationManager.getLastKnownLocation(provider);
+    //List<String>  providerList = locationManager.getAllProviders();
+    //if(null!=locations && null!=providerList && providerList.size()>0){                 
+    //double longitude = locations.getLongitude();
+    //double latitude = locations.getLatitude();
+    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());                 
+    try {
+        List<Address> listAddresses = geocoder.getFromLocation(latitude, longitude, 1);
+        if(null!=listAddresses&&listAddresses.size()>0){
+            String _Location = listAddresses.get(0).getAddressLine(1);
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+  }
+
+   
+   public void computeMetaData() {
+       try {
+    	   ExifInterface exif = new ExifInterface(picturePath);
+    	   ShowExif(exif);
+    	   if(exif.getAttribute(ExifInterface.TAG_DATETIME)!=null) {
+    		   _DateTime = getTagString(ExifInterface.TAG_DATETIME, exif);
+    	   }
+    	   Log.w("adsfdsafdsaf", getTagString(ExifInterface.TAG_GPS_LONGITUDE, exif));
+    	   if(exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)!=null && exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE)!=null) {
+    		   Log.w("dsfdsafad","into if...");
+    		   double longitude = Double.parseDouble(exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+    		   double latitude = Double.parseDouble(exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+    		   getLocationAddress(longitude, latitude);
+    	   }
+    	   
+    	   if(exif.getAttribute(ExifInterface.TAG_MAKE)!=null) {
+    		   _MAKE = exif.getAttribute(ExifInterface.TAG_MAKE);
+    	   }
+    	   
+    	   if(exif.getAttribute(ExifInterface.TAG_MODEL)!=null) {
+    		   _MODEL = getTagString(ExifInterface.TAG_MODEL, exif);
+    	   }
+    	   
+       } catch (IOException e) {
+    	   // TODO Auto-generated catch block
+    	   e.printStackTrace();
+    	   Toast.makeText(this, "Error!",Toast.LENGTH_LONG).show();
+       }
+	   
+   }
+   
+   
+    
+    
     public void saveImage(View v) {
       	 ImageView imageView = (ImageView) findViewById(R.id.imgView);
      	 imageView.buildDrawingCache();
@@ -131,11 +255,12 @@ public class MainActivity extends FragmentActivity implements
     	 Uri outputFileUri;
     	 try {
     	    File root = new File(Environment.getExternalStorageDirectory()
-    	      + File.separator + "folder_name" + File.separator);
+    	      + File.separator + "PhotoFilter" + File.separator);
     	    root.mkdirs();
-    	   File sdImageMainDirectory = new File(root, "myPicName.jpg");
+    	   File sdImageMainDirectory = new File(root, fName+"effect.jpg");
     	    outputFileUri = Uri.fromFile(sdImageMainDirectory);
     	    fOut = new FileOutputStream(sdImageMainDirectory);
+    	    
          } catch (Exception e) {
     	    Toast.makeText(this, "Error occured. Please try again later.",
     	      Toast.LENGTH_SHORT).show();
@@ -143,10 +268,33 @@ public class MainActivity extends FragmentActivity implements
 
     	   try {
     	    bm.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+    	    Toast.makeText(this, "saved", Toast.LENGTH_SHORT).show();
     	    fOut.flush();
     	    fOut.close();
     	   } catch (Exception e) {
     	   }
+    }
+    
+    Bitmap resizedBitmap(Bitmap bitmapOrg, int newWidth, int newHeight) {
+    	 int width = bitmapOrg.getWidth();
+         int height = bitmapOrg.getHeight();
+        
+         // calculate the scale - in this case = 0.4f
+         float scaleWidth = ((float) newWidth) / width;
+         float scaleHeight = ((float) newHeight) / height;
+        
+         // createa matrix for the manipulation
+         Matrix matrix = new Matrix();
+         // resize the bit map
+         matrix.postScale(scaleWidth, scaleHeight);
+  
+         // recreate the new Bitmap
+         Bitmap resizedBitmap = Bitmap.createBitmap(bitmapOrg, 0, 0,
+                           width, height, matrix, true);
+    
+         // make a Drawable from Bitmap to allow to set the BitMap
+         // to the ImageView, ImageButton or what ever
+    	return resizedBitmap;
     }
 
 	@Override
@@ -196,12 +344,62 @@ void applyFilter(String effect) {
 				// TODO Auto-generated method stub
 				super.handleMessage(msg);
 				ImageView imageView = (ImageView) findViewById(R.id.imgView);
-				imageView.setImageBitmap(change);
+				Bitmap resizedBmp = resizedBitmap(change, 640, 800);
+				Bitmap bmp =drawTextToBitmap(getBaseContext(),change,metaData, 20, 255 );
+				imageView.setImageBitmap(bmp);
 				progressDialog.dismiss();
 			}
 			
 		};
 		}
+
+public Bitmap drawTextToBitmap(Context mContext,  Bitmap bitmap,  String mText, int size, int color) {
+    try {
+         Resources resources = mContext.getResources();
+            float scale = resources.getDisplayMetrics().density;
+            Log.w("scale", "" + scale);
+         //   Bitmap bitmap = BitmapFactory.decodeResource(resources, resourceId);
+
+            android.graphics.Bitmap.Config bitmapConfig =   bitmap.getConfig();
+            // set default bitmap config if none
+            if(bitmapConfig == null) {
+              bitmapConfig = android.graphics.Bitmap.Config.ARGB_8888;
+            }
+            // resource bitmaps are imutable,
+            // so we need to convert it to mutable one
+            bitmap = bitmap.copy(bitmapConfig, true);
+
+            Canvas canvas = new Canvas(bitmap);
+            // new antialised Paint
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            // text color - #3D3D3D
+            paint.setColor(Color.rgb(color, color, color));
+            // text size in pixels
+            paint.setTextSize((int) (size * scale  ));
+            // text shadow
+            paint.setShadowLayer(5f, 0f, 0f, Color.BLACK);
+
+            
+
+            // draw text to the Canvas center
+            Rect bounds = new Rect();
+            paint.getTextBounds(mText, 0, mText.length(), bounds);
+            int x = (bitmap.getWidth() - bounds.width())/6;
+            int y = (bitmap.getHeight() + bounds.height())/2;
+            
+
+            canvas.drawText(mText, x * scale , y * scale   , paint);
+
+            return bitmap;
+    } catch (Exception e) {
+        // TODO: handle exception
+
+
+
+        return null;
+    }
+
+  }
 
 	@Override
 	public boolean onNavigationItemSelected(int position, long id) {
@@ -217,67 +415,83 @@ void applyFilter(String effect) {
 		switch(position+1) {
 		case 1:
 			ImageView imageView = (ImageView) findViewById(R.id.imgView);
-			imageView.setImageBitmap(sourceBitmap);
+			Bitmap bmp =drawTextToBitmap(getBaseContext(),sourceBitmap,"Hello Android", 20, 255);
+			imageView.setImageBitmap(bmp);
 			return true;
 		case 2:
 			styleId = BitmapFilter.GRAY_STYLE;
 			applyFilter(getString(R.string.gray));
+			effect = getString(R.string.gray);
 			return true;
 		case 3:
 			styleId = BitmapFilter.OLD_STYLE;
 			applyFilter(getString(R.string.old));
+			effect = getString(R.string.old);
 			return true;
 		case 4:
 			styleId = BitmapFilter.SHARPEN_STYLE;
 			applyFilter(getString(R.string.sharp));
+			effect = getString(R.string.sharp);
 			return true;
 		case 5:
 			styleId = BitmapFilter.BLUR_STYLE;
 			applyFilter(getString(R.string.blur));
+			effect = getString(R.string.blur);
 			return true;
 		case 6:
 			styleId = BitmapFilter.LOMO_STYLE;
 			applyFilter(getString(R.string.lomo));
+			effect = getString(R.string.lomo);
 			return true;
 		case 7:
 			styleId = BitmapFilter.OIL_STYLE;
 			applyFilter(getString(R.string.oil));
+			effect = getString(R.string.oil);
 			return true;
 		case 8:
 			styleId = BitmapFilter.SOFT_GLOW_STYLE;
 			applyFilter(getString(R.string.SoftGlow));
+			effect = getString(R.string.SoftGlow);
 			return true;
 		case 9:
 			styleId = BitmapFilter.PIXELATE_STYLE;
 			applyFilter(getString(R.string.pixelate));
+			effect = getString(R.string.pixelate);
 			return true;
 		case 10:
 			styleId = BitmapFilter.HDR_STYLE;
 			applyFilter(getString(R.string.HDR));
+			effect = getString(R.string.HDR);
 			return true;
 		case 11:
 			styleId = BitmapFilter.GAUSSIAN_BLUR_STYLE;
 			applyFilter(getString(R.string.gaussBlur));
+			effect = getString(R.string.gaussBlur);
 			return true;
 		case 12:
 			styleId = BitmapFilter.LIGHT_STYLE;
 			applyFilter(getString(R.string.light));
-			return true;
-		case 13:
-			styleId = BitmapFilter.NEON_STYLE;
-			applyFilter(getString(R.string.neon));
+			effect = getString(R.string.light);
 			return true;
 		case 14:
+			styleId = BitmapFilter.NEON_STYLE;
+			applyFilter(getString(R.string.neon));
+			effect = getString(R.string.neon);
+			return true;
+		case 13:
 			styleId = BitmapFilter.INVERT_STYLE;
 			applyFilter(getString(R.string.invert));
+			effect = getString(R.string.invert);
 			return true;
 		case 15:
 			styleId = BitmapFilter.TV_STYLE;
 			applyFilter(getString(R.string.tv));
+			effect = getString(R.string.tv);
 			return true;
 		case 16:
 			styleId = BitmapFilter.RELIEF_STYLE;
 			applyFilter(getString(R.string.relief));
+			effect = getString(R.string.relief);
 			return true;
 		}
 
