@@ -61,7 +61,7 @@ public class MainActivity extends FragmentActivity implements
 	String picturePath;
 	Handler handler;
 	String effect="original"; 
-	String ext;
+	String ext="jpg";
 	
 	ProgressDialog progressDialog = null;
 	
