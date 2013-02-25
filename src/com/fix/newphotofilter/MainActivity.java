@@ -61,6 +61,7 @@ public class MainActivity extends FragmentActivity implements
 	String picturePath;
 	Handler handler;
 	String effect="original"; 
+	String ext;
 	
 	ProgressDialog progressDialog = null;
 	
@@ -139,7 +140,16 @@ public class MainActivity extends FragmentActivity implements
             String fileName = new File(picturePath).getName();
             String fName =fileName.substring(0, fileName.lastIndexOf('.'));
             Log.w("filename",fName);
+            final String FPATH = picturePath;
+            Filename pic = new Filename(FPATH, '/', '.');
+            Log.w("filename", "filename"+pic.filename());
+            Log.w("filename", "extnsn"+pic.extension());
+            ext = pic.extension();
+  
+
+            
             Toast.makeText(this, ""+picturePath,Toast.LENGTH_SHORT).show();
+            //Bitmap resizedBmp = resizedBitmap(change, 640, 800);
             cursor.close();
             computeMetaData();
              
@@ -257,7 +267,10 @@ public class MainActivity extends FragmentActivity implements
     	    File root = new File(Environment.getExternalStorageDirectory()
     	      + File.separator + "PhotoFilter" + File.separator);
     	    root.mkdirs();
-    	   File sdImageMainDirectory = new File(root, fName+"effect.jpg");
+    	    //extnsn =  fileName.substring(fileName.lastIndexOf("."));
+    	    //Log.w("ectension", ext + "");
+    	    //Log.w("qwerty", "fname " + fileName.substring(fileName.lastIndexOf(".")));
+    	    File sdImageMainDirectory = new File(root, fName+effect+"."+ext);
     	    outputFileUri = Uri.fromFile(sdImageMainDirectory);
     	    fOut = new FileOutputStream(sdImageMainDirectory);
     	    
@@ -278,6 +291,7 @@ public class MainActivity extends FragmentActivity implements
     Bitmap resizedBitmap(Bitmap bitmapOrg, int newWidth, int newHeight) {
     	 int width = bitmapOrg.getWidth();
          int height = bitmapOrg.getHeight();
+         Log.w("width", ""+width);
         
          // calculate the scale - in this case = 0.4f
          float scaleWidth = ((float) newWidth) / width;
@@ -344,9 +358,9 @@ void applyFilter(String effect) {
 				// TODO Auto-generated method stub
 				super.handleMessage(msg);
 				ImageView imageView = (ImageView) findViewById(R.id.imgView);
-				Bitmap resizedBmp = resizedBitmap(change, 640, 800);
-				Bitmap bmp =drawTextToBitmap(getBaseContext(),change,metaData, 20, 255 );
-				imageView.setImageBitmap(bmp);
+				
+				//Bitmap bmp =drawTextToBitmap(getBaseContext(),change,"hello", 20, 255 );
+				imageView.setImageBitmap(change);
 				progressDialog.dismiss();
 			}
 			
@@ -379,7 +393,7 @@ public Bitmap drawTextToBitmap(Context mContext,  Bitmap bitmap,  String mText, 
             // text shadow
             paint.setShadowLayer(5f, 0f, 0f, Color.BLACK);
 
-            
+            Log.w("bitmp width", bitmap.getWidth()+"");
 
             // draw text to the Canvas center
             Rect bounds = new Rect();
@@ -415,7 +429,7 @@ public Bitmap drawTextToBitmap(Context mContext,  Bitmap bitmap,  String mText, 
 		switch(position+1) {
 		case 1:
 			ImageView imageView = (ImageView) findViewById(R.id.imgView);
-			Bitmap bmp =drawTextToBitmap(getBaseContext(),sourceBitmap,"Hello Android", 20, 255);
+			Bitmap bmp =drawTextToBitmap(getBaseContext(),sourceBitmap,"Hello! Pick an Image and apply Effects... ", 20, 255);
 			imageView.setImageBitmap(bmp);
 			return true;
 		case 2:
@@ -525,5 +539,33 @@ public Bitmap drawTextToBitmap(Context mContext,  Bitmap bitmap,  String mText, 
 			return textView;
 		}
 	}
+	
+	class Filename {
+		  private String fullPath;
+		  private char pathSeparator, extensionSeparator;
+
+		  public Filename(String str, char sep, char ext) {
+		    fullPath = str;
+		    pathSeparator = sep;
+		    extensionSeparator = ext;
+		  }
+
+		  public String extension() {
+		    int dot = fullPath.lastIndexOf(extensionSeparator);
+		    return fullPath.substring(dot + 1);
+		  }
+
+		  public String filename() { // gets filename without extension
+		    int dot = fullPath.lastIndexOf(extensionSeparator);
+		    int sep = fullPath.lastIndexOf(pathSeparator);
+		    return fullPath.substring(sep + 1, dot);
+		  }
+
+		  public String path() {
+		    int sep = fullPath.lastIndexOf(pathSeparator);
+		    return fullPath.substring(0, sep);
+		  }
+		}
+
 
 }
