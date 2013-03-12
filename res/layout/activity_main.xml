@@ -6,22 +6,38 @@
     tools:context=".PhotoFilterLaunch"
     tools:ignore="MergeRootFrame" 
     android:orientation="vertical"
-    android:weightSum="1">
+>
     
     <ImageView
         android:id="@+id/imgView"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
         android:src="@drawable/test"
-        android:layout_weight="0.8">
+        android:layout_weight="1">
     </ImageView>
+    <TextView
+        android:id="@+id/meta"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="Pick an Image from sdcard and apply effects!"
+		android:layout_gravity="center"
+		android:padding="10dp"
+		android:background="#aaa">
+    </TextView>
+    <Button
+     	    android:id="@+id/filterList"
+     	    android:layout_width="match_parent"
+     	    android:layout_height="wrap_content"
+     	    android:text="Effects"
+     	    android:onClick="effectList" 
+>
+    </Button>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/imgView"
-        android:layout_weight="0.2">
+        android:layout_below="@id/imgView">
      	<Button
      	    android:id="@+id/pick"
      	    android:layout_width="match_parent"
